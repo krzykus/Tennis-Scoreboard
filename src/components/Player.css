@@ -1,0 +1,81 @@
+
+.score-button {
+    margin:auto;
+    width:70px;
+  }
+  .card-header {
+    height: calc(4rem + 4vmin);
+    position:relative;
+  }
+  .card-title {
+    position:absolute;
+    top:36%;
+  }
+  
+  .card-header > .avatar  {
+    width: calc(2rem + 8vmin);
+    height: calc(2rem + 8vmin);
+    border:1px black solid;
+    border-radius: 50%;
+    position: absolute;
+    background: white;
+    top: calc(-1rem - 1vmin);
+  }
+  .card.left > .card-header > .avatar {
+    right: calc(-1rem - 1vmin);
+  }
+  .card.left > .card-header  > .card-title {
+    left: 15px;
+  }
+  .card.right {
+    margin-left: auto;
+  }
+  .card.right > .card-header  > .avatar {
+    left: calc(-1rem - 1vmin);
+  }
+  .card.right > .card-header  > .card-title {
+    right: 15px;
+  }
+  .score-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-animation: flip-horizontal-bottom 1s cubic-bezier(0.455, 0.030, 0.515, 0.955) both;
+            animation: flip-horizontal-bottom 1s cubic-bezier(0.455, 0.030, 0.515, 0.955) both;
+  }
+  .card-body {
+    position: relative;
+    height: 125px;
+  }
+  .score {
+    position: absolute;
+    top: calc(50% - 25px);
+    left: calc(50% - 25px);
+    width:50px;
+    height:50px;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    background: #0f0;
+    border-radius: 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .back {
+    transform: rotateX(180deg);
+    z-index:10;
+  }
+  .front {
+    z-index: 20;
+  }
+  
+  @keyframes flip-horizontal-bottom {
+    0% {
+      transform: rotateX(0);
+    }
+    100% {
+      transform: rotateX(-180deg);
+    }
+  }
