@@ -1,7 +1,7 @@
 import React from 'react';
 import Toast from 'react-bootstrap/Toast';
 
-import './Overlay.css'
+import './Overlay.scss'
 
 //class Overlay extends Component {
 const Overlay = (props) => {
