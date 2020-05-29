@@ -18,15 +18,14 @@ class App extends Component {
     };
   }
 
-  addScore = () => {//This probably can be done better but for 5am can do...
-    console.log(this.state);
+  addScore = () => {//This probably can be done better but for 5am can do...;
     let randomPlayer = Math.random();
     let players = [];
-    players.push(randomPlayer < 0.5 ? this.state.playerOne : this.state.playerTwo);
-    players.push(randomPlayer < 0.5 ? this.state.playerTwo : this.state.playerOne);
+    players.push(randomPlayer < 0.5 ? {...this.state.playerOne} : {...this.state.playerTwo});
+    players.push(randomPlayer < 0.5 ? {...this.state.playerTwo} : {...this.state.playerOne});
     players[0].currentScore = players[0].newScore
     players[0].newScore++;
-    if(players[0].newScore==5 || (players[0].newScore==4 && players[1].newScore==2))
+    if(players[0].newScore==5 || (players[0].newScore==4 && players[1].newScore<=2))
     {
       //TODO: Show alert that player won
       if(randomPlayer<0.5)
