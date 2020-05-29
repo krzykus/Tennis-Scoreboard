@@ -7,8 +7,6 @@ import './Player.css'
 const Player = (props) => {
 
     let scores = ["0","15","30","40","A"];
-    console.log(123);
-    console.log(props);
     return (
     <Card style={{ width: 'calc(3rem + 14vmin)' }} className={props.align}>
         <Card.Header>
