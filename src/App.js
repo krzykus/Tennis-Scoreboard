@@ -12,6 +12,7 @@ import Button from 'react-bootstrap/Button';
 import Player from './components/Player';
 import Overlay from './components/Overlay';
 import UsernameForm from './components/UsernameForm';
+import Message from './components/Message';
 import './App.css';
 
 class App extends Component {
@@ -20,7 +21,8 @@ class App extends Component {
     this.ENDPOINT = "http://127.0.0.1:4000";
     this.socket = socketIOClient(this.ENDPOINT);
     this.state = {
-      msg: "",
+      msg: {value: "",display:false},
+
       playerID: -1,
       gameFinished: false,
       winner: {},
@@ -31,27 +33,29 @@ class App extends Component {
   componentDidMount = () => {
     this.socket.on("abandoned", data => {
       //TODO show button to join new game
-      this.setState({msg: data.opponent+" left game"});
+      this.setMessage(data.opponent+" left game");
     });
 
     this.socket.on("move state", data => {
       console.log(data)
       if(data.move==="Awaiting move") {
-        this.setState({msg: "Awaiting for all players to make a move"});
+        this.setMessage("Awaiting for all players to make a move");
       }
       else if(data.move==="Scored") {
-        this.setState({msg:"Scored!"});
         //Update Scores
         if(data.serving===this.state.playerID) {
           let playerOne = {...this.state.playerOne};
           playerOne.currentScore = playerOne.newScore;
           playerOne.newScore = data.scores[this.state.playerID];
+          this.setMessage("You've scored!");
           this.setState({playerOne:playerOne});
         }
         else {
+          
           let playerTwo = {...this.state.playerTwo};
           playerTwo.currentScore = playerTwo.newScore;
           playerTwo.newScore = data.scores[1-this.state.playerID];
+          this.setMessage(playerTwo.name+" has scored!");
           this.setState({playerTwo:playerTwo});
         }
       }
@@ -60,7 +64,8 @@ class App extends Component {
       }
       else if(data.move==="Finished") {
         let winner = this.state.playerID===data.serving ? this.state.playerOne : this.state.playerTwo;
-        this.setState({gameFinished:true, msg:"", winner:winner});
+        this.setState({gameFinished:true, winner:winner});
+        this.setMessage("");
       }
     });
     this.socket.on("created", data => {
@@ -85,42 +90,28 @@ class App extends Component {
     this.setState({playerOne:player});
     this.socket.emit("new player",username);
   }
+  setMessage = (msg) => {
+    this.setState({
+      msg:{value:msg, display:true}
+    });
+  }
+  closeMessage = () => {
+    this.setState({
+      msg:{display:false}
+    })
+  }
   toggleShow = () => {
     this.setState({gameFinished:false})
   }
-  addScore = () => {//This probably can be done better but for 5am can do...;
-    let randomPlayer = Math.random();
-    let players = [];
-    players.push(randomPlayer < 0.5 ? {...this.state.playerOne} : {...this.state.playerTwo});
-    players.push(randomPlayer < 0.5 ? {...this.state.playerTwo} : {...this.state.playerOne});
-    players[0].currentScore = players[0].newScore
-    players[0].newScore++;
-    if(players[0].newScore===5 || (players[0].newScore===4 && players[1].newScore<=2))
-    {
-      this.setState({gameFinished:true,winner:players[0]});
-      this.restart();
-    }
-    else if(players[0].newScore===4 && players[1].newScore===4)
-    {
-      players[1].currentScore = 4;
-      players[1].newScore = 3;
-      if(randomPlayer<0.5)
-        this.setState({playerTwo:players[1]});
-      else
-        this.setState({playerOne:players[1]});
-    }
-    else
-    {
-      if(randomPlayer<0.5)
-        this.setState({playerOne:players[0]});
-      else
-        this.setState({playerTwo:players[0]});
-    }
-  }
   restart = () => {
+    let playerOne = {...this.state.playerOne};
+    let playerTwo = {...this.state.playerTwo};
+    playerOne.currentScore = playerTwo.currentScore = 0;
+    playerOne.newScore = playerTwo.newScore = 0;
+
     this.setState({
-      playerOne: {currentScore: 0, newScore:0, name: "Roger", img:"/img/roger.png"},
-      playerTwo: {currentScore: 0, newScore:0, name: "Tim", img:"/img/tim.png"}
+      playerOne: playerOne,
+      playerTwo: playerTwo
     });
   }
   render = () => {
@@ -128,7 +119,7 @@ class App extends Component {
     <Container className="p-3">
       <Jumbotron>
         <h1 className="header">Tennis Scoreboard</h1>
-        <div>{this.state.msg}</div>
+          <Message show={this.state.msg.display} handler={this.closeMessage}>{this.state.msg.value}</Message>
         <div>
           {this.state.playerID===-1? <UsernameForm handler={this.setUsername} />: null}
         </div>
