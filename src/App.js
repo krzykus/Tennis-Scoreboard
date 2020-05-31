@@ -11,34 +11,79 @@ import Button from 'react-bootstrap/Button';
 
 import Player from './components/Player';
 import Overlay from './components/Overlay';
-
+import UsernameForm from './components/UsernameForm';
 import './App.css';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.ENDPOINT = "http://127.0.0.1:4000";
+    this.socket = socketIOClient(this.ENDPOINT);
     this.state = {
-      msg: "Init",
+      msg: "",
+      playerID: -1,
       gameFinished: false,
       winner: {},
-      playerOne: {currentScore: 0, newScore:0, name: "Roger", img:"/img/roger.png"},
-      playerTwo: {currentScore: 0, newScore:0, name: "Tim", img:"/img/tim.png"}
+      playerOne: {currentScore: 0, newScore:0, name: "???", img:"/img/roger.png"},
+      playerTwo: {currentScore: 0, newScore:0, name: "???", img:"/img/tim.png"}
     };
   }
   componentDidMount = () => {
-    const socket = socketIOClient(this.ENDPOINT);
-    socket.on("Bump", data => {
-      this.setState({msg: data});
-    });
-    socket.on("abandoned", data => {
+    this.socket.on("abandoned", data => {
       //TODO show button to join new game
       this.setState({msg: data.opponent+" left game"});
     });
-    socket.on("move state", data => {
-      //TODO update scores and display message
+
+    this.socket.on("move state", data => {
+      console.log(data)
+      if(data.move==="Awaiting move") {
+        this.setState({msg: "Awaiting for all players to make a move"});
+      }
+      else if(data.move==="Scored") {
+        this.setState({msg:"Scored!"});
+        //Update Scores
+        if(data.serving===this.state.playerID) {
+          let playerOne = {...this.state.playerOne};
+          playerOne.currentScore = playerOne.newScore;
+          playerOne.newScore = data.scores[this.state.playerID];
+          this.setState({playerOne:playerOne});
+        }
+        else {
+          let playerTwo = {...this.state.playerTwo};
+          playerTwo.currentScore = playerTwo.newScore;
+          playerTwo.newScore = data.scores[1-this.state.playerID];
+          this.setState({playerTwo:playerTwo});
+        }
+      }
+      else if(data.move==="Continue") {
+
+      }
+      else if(data.move==="Finished") {
+        let winner = this.state.playerID===data.serving ? this.state.playerOne : this.state.playerTwo;
+        this.setState({gameFinished:true, msg:"", winner:winner});
+      }
     });
-    socket.emit("new player",Math.random());
+    this.socket.on("created", data => {
+      console.log("created")
+      console.log(data);
+    })
+    this.socket.on("game started", data => {
+      this.setState({msg: "Game started! Playing against: "+data.opponent, playerID:data.playerID})
+      let opponent = {...this.state.playerTwo};
+      opponent.name = data.opponent;
+      this.setState({playerTwo:opponent}); 
+      console.log("game started")
+      console.log(data);
+    })
+  }
+  makeMove = (move) => {
+    this.socket.emit("move made",move);
+  }
+  setUsername = (username) => {
+    let player = {...this.state.playerOne};
+    player.name = username;
+    this.setState({playerOne:player});
+    this.socket.emit("new player",username);
   }
   toggleShow = () => {
     this.setState({gameFinished:false})
@@ -84,6 +129,9 @@ class App extends Component {
       <Jumbotron>
         <h1 className="header">Tennis Scoreboard</h1>
         <div>{this.state.msg}</div>
+        <div>
+          {this.state.playerID===-1? <UsernameForm handler={this.setUsername} />: null}
+        </div>
         <div style={{position:"relative"}}>
           <Overlay show={this.state.gameFinished} winner={this.state.winner} toggleShow={this.toggleShow.bind(this)} />
           <Row>
@@ -92,7 +140,8 @@ class App extends Component {
             </Col>
             <Col sm>
               <div className="score-button">
-                <Button onClick={this.addScore}>Random</Button>
+                <Button onClick={()=>this.makeMove('left')}>Left</Button>
+                <Button onClick={()=>this.makeMove('right')}>Right</Button>
               </div>
             </Col>
             <Col sm>  
