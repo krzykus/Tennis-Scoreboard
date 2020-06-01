@@ -30,7 +30,7 @@ class App extends Component {
       playerTwo: {currentScore: 0, newScore:0, name: "???", img:"/img/tim.png"}
     };
   }
-  componentDidMount = () => {
+  componentDidMount = () => {//TODO: This should be refactored
     this.socket.on("abandoned", data => {
       //TODO show button to join new game
       this.setMessage(data.opponent+" left game");
@@ -73,7 +73,8 @@ class App extends Component {
       console.log(data);
     })
     this.socket.on("game started", data => {
-      this.setState({msg: "Game started! Playing against: "+data.opponent, playerID:data.playerID})
+      this.setMessage("Game started! Playing against: "+data.opponent);
+      this.setState({playerID:data.playerID})
       let opponent = {...this.state.playerTwo};
       opponent.name = data.opponent;
       this.setState({playerTwo:opponent}); 

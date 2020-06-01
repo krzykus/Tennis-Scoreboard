@@ -8,3 +8,13 @@
 html {
   font-size: calc(7px + 1vmin);
 }
+
+.score-button {
+  margin:auto;
+  width:70px;
+  display: flex;
+  flex-direction: row;
+}
+.score-button > button {
+  margin: 0 10px;
+}

@@ -5,13 +5,13 @@ import Button from 'react-bootstrap/Button';
 const Message = (props) => {
     return (
     <>
-        <Alert show={props.show} variant="success">
+        <Alert show={props.show} variant="success" transition={null}>
         <div>
             {props.children}
         </div>
         <div className="d-flex justify-content-end">
           <Button onClick={() => props.handler()} variant="outline-success">
-            Close me ya'll!
+            Close!
           </Button>
         </div>
       </Alert>
